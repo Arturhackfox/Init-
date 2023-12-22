@@ -1,0 +1,166 @@
+// Инициализация
+// Designated init  - Main init() for class, все init() без приставки.
+// Convenience init - provides more "convenient" way of creating class by re-using init() inside new init()
+
+// При инициализации есть 2 фазы:
+// 1. Проставить все проперти
+// 2. Начать использовать эти проперти
+class Item {
+    var name: String
+    var weight: Int
+    
+    init(name: String, weight: Int) {
+        // 1 фаза
+        self.name = name
+        self.weight = weight
+        // 2 фаза
+        if name == "Mark" {
+            self.name = "NOT mark"
+        }
+    }
+}
+
+ 
+var suitcase = Item(name: "Mark", weight: 12)
+suitcase.name
+
+// Inheritance init() Rules:
+// 1. Designated init() must call Designated init() from it Superclass.
+// 2. Convenience init() must call another init() from the same class.
+// 3. Convenience init() must ultimately call a Designated init().
+// ------- a Simple way to remember this: ---------
+// Designated init() always go UP in hierarchy.
+// Convenience init() always go across in ONE class.
+
+class Person {
+    var name: String
+    var salaryInUsd: Double
+    
+    //Designated init
+    init(name: String, salaryInUsd: Double) {
+        self.name = name
+        self.salaryInUsd = salaryInUsd
+    }
+    
+    // convenience - для использования init() внутри другого init()
+    // В конечном счете он должен смотреть на Designated init()
+    
+    convenience init(name: String, salaryInBTC: Double) {
+        self.init(name: name, salaryInUsd: salaryInBTC * 43000)
+        self.name += "yeee"
+    }
+}
+
+// Иерархия инициализации:
+// При наследовании класс должен проинициализировать СНАЧАЛА свои проперти
+// после чего проперти БАЗОВОГО класса
+
+class Programmer: Person {
+    var language: String
+    
+    init(language: String, name: String, salary: Double) {
+        self.language = language     // Свои проинициализировал
+        self.language += " 🙌"    // Свои проперти можно сразу модифицировать
+        super.init(name: name, salaryInUsd: salary) // Calling the designated initializer of the superclass
+        self.name += " ⚡️" // После инициализации - можно сразу модифицировать
+
+    }
+    
+  
+}
+
+var IOSDeveloper = Programmer(language: "Swift", name: "Mike", salary: 900)
+print(IOSDeveloper.language)
+print(IOSDeveloper.name)
+
+var person = Person(name: "Mike", salaryInBTC: 0.12)
+person.name
+person.salaryInUsd
+
+
+
+// Failable init
+// if <condition>   {return nil}
+
+class Worker {
+    var name: String
+    var salary: Int
+    
+    init?(name: String, salaryUAH: Int) {
+        guard salaryUAH >= 10000 else { return nil }
+        self.name = name
+        self.salary = salaryUAH
+    }
+}
+
+var newWorker = Worker(name: "Steve", salaryUAH: 11300) // nill
+
+// Failiable init() with Enums
+enum Planets {
+    case earth, mars, jupiter
+    
+    init?(num: Int) {
+        switch num {
+        case 1: self = .earth
+        case 2: self = .jupiter
+        case 3: self = .mars
+        default: return nil
+        }
+    }
+    
+    }
+
+var plantet1 = Planets(num: 1)
+
+
+
+enum Phone {
+    case Iphone, Samsung, Xiaomi
+    
+    init?(batteryTime: Int) {
+        switch batteryTime {
+        case 0...5: self = .Xiaomi
+        case 6...10: self = .Samsung
+        case 11...15: self = .Iphone
+        default: return nil
+        }
+    }
+}
+
+let xiomiUser = Phone(batteryTime: 15)
+
+
+// required init - все сабклассы должны реализовать этот инициализатор
+
+class Car {
+    var brand: String
+    
+    required init(brand: String) {
+        self.brand = brand
+    }
+    
+    init() {
+        self.brand = "Mercedes"
+    }
+}
+
+class ToyCar: Car {
+    var weight: Int
+    
+    init(weight: Int, brand: String) {
+        self.weight = weight
+        super.init(brand: brand)
+        if brand == "Mercedes" { self.brand += " 😈"}
+    }
+    
+    required init( brand: String) {
+        self.weight = 1
+        super.init(brand: brand)
+    }
+    
+}
+
+var myFirstCar = Car()
+myFirstCar.brand
+var myToyCar = ToyCar(weight: 1, brand: "Mercedes")
+print(myToyCar.brand)
